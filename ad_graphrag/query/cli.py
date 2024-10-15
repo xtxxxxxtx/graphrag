@@ -45,6 +45,7 @@ def run_global_search(
             "create_final_nodes.parquet",
             "create_final_entities.parquet",
             "create_final_community_reports.parquet",
+            "create_final_relationships.parquet",
         ],
         optional_list=[],
     )
@@ -53,6 +54,8 @@ def run_global_search(
     final_community_reports: pd.DataFrame = dataframe_dict[
         "create_final_community_reports"
     ]
+    final_relationships: pd.DataFrame = dataframe_dict["create_final_relationships"]
+    # final_covariates: pd.DataFrame = dataframe_dict["create_final_covariates"]
 
     # call the Query API
     if streaming:
@@ -91,6 +94,7 @@ def run_global_search(
             community_level=community_level,
             response_type=response_type,
             query=query,
+            relationships=final_relationships,
         )
     )
     reporter.success(f"Global Search Response:\n{response}")

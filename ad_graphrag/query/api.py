@@ -41,7 +41,10 @@ from graphrag.query.indexer_adapters import (
 )
 from graphrag.query.input.loaders.dfs import store_entity_semantic_embeddings
 
-from ad_graphrag.query.reverse_engineering import from_final_answer_to_communities, from_map_response_to_communities_and_score
+from ad_graphrag.query.reverse_engineering import (
+    global_search_reverse_engineering,
+    reverse_result_print,
+)
 
 reporter = PrintProgressReporter("")
 
@@ -55,6 +58,7 @@ async def global_search(
     community_level: int,
     response_type: str,
     query: str,
+    relationships: pd.DataFrame,
     reverse: bool = True,
 ) -> tuple[
     str | dict[str, Any] | list[dict[str, Any]],
@@ -91,10 +95,17 @@ async def global_search(
     result: SearchResult = await search_engine.asearch(query=query)
     response = result.response
     context_data = _reformat_context_data(result.context_data)  # type: ignore
-    print(len(result.map_responses))
     if reverse:
-        #refer_communities = from_final_answer_to_communities(result, print_communities=True)
-        all_refer_communities = from_map_response_to_communities_and_score(result, print_communities=True)
+        reverse_target = "map_response"
+        reverse_level = "instance"
+        _relationships = read_indexer_relationships(relationships)
+        all_reference_infor = global_search_reverse_engineering(
+            result,
+            reverse_target=reverse_target,
+            reverse_level=reverse_level,
+            entities=_entities,
+            relationships=_relationships)
+        reverse_result_print(all_reference_infor, reverse_target)
 
     return response, context_data
 
