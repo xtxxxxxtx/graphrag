@@ -10,27 +10,27 @@ from datashaper import (
     VerbCallbacks,
 )
 
-from graphrag.index.operations.layout_graph import layout_graph
-from graphrag.index.operations.snapshot import snapshot
-from graphrag.index.operations.unpack_graph import unpack_graph
 from graphrag.index.storage import PipelineStorage
+from graphrag.index.verbs.graph.layout.layout_graph import layout_graph_df
+from graphrag.index.verbs.graph.unpack import unpack_graph_df
+from graphrag.index.verbs.snapshot import snapshot_df
 
 
 async def create_final_nodes(
     entity_graph: pd.DataFrame,
     callbacks: VerbCallbacks,
     storage: PipelineStorage,
-    layout_strategy: dict[str, Any],
+    strategy: dict[str, Any],
     level_for_node_positions: int,
     snapshot_top_level_nodes: bool = False,
 ) -> pd.DataFrame:
     """All the steps to transform final nodes."""
     laid_out_entity_graph = cast(
         pd.DataFrame,
-        layout_graph(
+        layout_graph_df(
             entity_graph,
             callbacks,
-            layout_strategy,
+            strategy,
             embeddings_column="embeddings",
             graph_column="clustered_graph",
             to="node_positions",
@@ -40,7 +40,7 @@ async def create_final_nodes(
 
     nodes = cast(
         pd.DataFrame,
-        unpack_graph(
+        unpack_graph_df(
             laid_out_entity_graph, callbacks, column="positioned_graph", type="nodes"
         ),
     )
@@ -51,7 +51,7 @@ async def create_final_nodes(
     nodes = cast(pd.DataFrame, nodes[["id", "x", "y"]])
 
     if snapshot_top_level_nodes:
-        await snapshot(
+        await snapshot_df(
             nodes,
             name="top_level_nodes",
             storage=storage,
@@ -69,5 +69,4 @@ async def create_final_nodes(
     )
     joined.rename(columns={"label": "title", "cluster": "community"}, inplace=True)
 
-    # TODO: Find duplication source
-    return joined.drop_duplicates(subset=["title", "community"])
+    return joined

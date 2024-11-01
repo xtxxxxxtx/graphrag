@@ -136,7 +136,7 @@ class TestIndexer:
             "index",
             "--verbose" if debug else None,
             "--root",
-            root.resolve().as_posix(),
+            root.absolute().as_posix(),
             "--reporter",
             "print",
         ]
@@ -178,26 +178,30 @@ class TestIndexer:
             workflows == expected_workflows
         ), f"Workflows missing from stats.json: {expected_workflows - workflows}. Unexpected workflows in stats.json: {workflows - expected_workflows}"
 
-        # [OPTIONAL] Check runtime
+        # [OPTIONAL] Check subworkflows
         for workflow in expected_workflows:
-            # Check max runtime
-            max_runtime = workflow_config[workflow].get("max_runtime", None)
-            if max_runtime:
-                assert (
-                    stats["workflows"][workflow]["overall"] <= max_runtime
-                ), f"Expected max runtime of {max_runtime}, found: {stats['workflows'][workflow]['overall']} for workflow: {workflow}"
+            if "subworkflows" in workflow_config[workflow]:
+                # Check number of subworkflows
+                subworkflows = stats["workflows"][workflow]
+                expected_subworkflows = workflow_config[workflow].get(
+                    "subworkflows", None
+                )
+                if expected_subworkflows:
+                    assert (
+                        len(subworkflows) - 1 == expected_subworkflows
+                    ), f"Expected {expected_subworkflows} subworkflows, found: {len(subworkflows) - 1} for workflow: {workflow}: [{subworkflows}]"
+
+                # Check max runtime
+                max_runtime = workflow_config[workflow].get("max_runtime", None)
+                if max_runtime:
+                    assert (
+                        stats["workflows"][workflow]["overall"] <= max_runtime
+                    ), f"Expected max runtime of {max_runtime}, found: {stats['workflows'][workflow]['overall']} for workflow: {workflow}"
 
         # Check artifacts
         artifact_files = os.listdir(artifacts)
-        # check that the number of workflows matches the number of artifacts, but:
-        # (1) do not count workflows with only transient output
-        # (2) account for the stats.json file
-        transient_workflows = [
-            "workflow:create_base_text_units",
-        ]
         assert (
-            len(artifact_files)
-            == (len(expected_workflows) - len(transient_workflows) + 1)
+            len(artifact_files) == len(expected_workflows) + 1
         ), f"Expected {len(expected_workflows) + 1} artifacts, found: {len(artifact_files)}"
 
         for artifact in artifact_files:
@@ -229,12 +233,11 @@ class TestIndexer:
             "poe",
             "query",
             "--root",
-            root.resolve().as_posix(),
+            root.absolute().as_posix(),
             "--method",
             query_config["method"],
-            "--community-level",
+            "--community_level",
             str(query_config.get("community_level", 2)),
-            "--query",
             query_config["query"],
         ]
 

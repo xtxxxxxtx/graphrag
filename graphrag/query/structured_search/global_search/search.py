@@ -14,7 +14,6 @@ from typing import Any
 import pandas as pd
 import tiktoken
 
-from graphrag.callbacks.global_search_callbacks import GlobalSearchLLMCallback
 from graphrag.llm.openai.utils import try_parse_json_object
 from graphrag.query.context_builder.builders import GlobalContextBuilder
 from graphrag.query.context_builder.conversation_history import (
@@ -23,6 +22,9 @@ from graphrag.query.context_builder.conversation_history import (
 from graphrag.query.llm.base import BaseLLM
 from graphrag.query.llm.text_utils import num_tokens
 from graphrag.query.structured_search.base import BaseSearch, SearchResult
+from graphrag.query.structured_search.global_search.callbacks import (
+    GlobalSearchLLMCallback,
+)
 from graphrag.query.structured_search.global_search.map_system_prompt import (
     MAP_SYSTEM_PROMPT,
 )
@@ -54,7 +56,7 @@ class GlobalSearchResult(SearchResult):
     reduce_context_text: str | list[str] | dict[str, str]
 
 
-class GlobalSearch(BaseSearch[GlobalContextBuilder]):
+class GlobalSearch(BaseSearch):
     """Search orchestration for global search mode."""
 
     def __init__(
@@ -145,7 +147,6 @@ class GlobalSearch(BaseSearch[GlobalContextBuilder]):
         - Step 2: Combine the answers from step 2 to generate the final answer
         """
         # Step 1: Generate answers for each batch of community short summaries
-
         start_time = time.time()
         context_chunks, context_records = self.context_builder.build_context(
             conversation_history=conversation_history, **self.context_builder_params

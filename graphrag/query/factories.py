@@ -21,6 +21,7 @@ from graphrag.query.context_builder.entity_extraction import EntityVectorStoreKe
 from graphrag.query.llm.oai.chat_openai import ChatOpenAI
 from graphrag.query.llm.oai.embedding import OpenAIEmbedding
 from graphrag.query.llm.oai.typing import OpenaiApiType
+from graphrag.query.structured_search.base import BaseSearch
 from graphrag.query.structured_search.global_search.community_context import (
     GlobalCommunityContext,
 )
@@ -43,16 +44,17 @@ def get_llm(config: GraphRagConfig) -> ChatOpenAI:
         **config.llm.model_dump(),
         "api_key": f"REDACTED,len={len(debug_llm_key)}",
     }
-    audience = (
-        config.llm.audience
-        if config.llm.audience
-        else "https://cognitiveservices.azure.com/.default"
-    )
+    if config.llm.cognitive_services_endpoint is None:
+        cognitive_services_endpoint = "https://cognitiveservices.azure.com/.default"
+    else:
+        cognitive_services_endpoint = config.llm.cognitive_services_endpoint
     print(f"creating llm client with {llm_debug_info}")  # noqa T201
     return ChatOpenAI(
         api_key=config.llm.api_key,
         azure_ad_token_provider=(
-            get_bearer_token_provider(DefaultAzureCredential(), audience)
+            get_bearer_token_provider(
+                DefaultAzureCredential(), cognitive_services_endpoint
+            )
             if is_azure_client and not config.llm.api_key
             else None
         ),
@@ -75,15 +77,17 @@ def get_text_embedder(config: GraphRagConfig) -> OpenAIEmbedding:
         **config.embeddings.llm.model_dump(),
         "api_key": f"REDACTED,len={len(debug_embedding_api_key)}",
     }
-    if config.embeddings.llm.audience is None:
-        audience = "https://cognitiveservices.azure.com/.default"
+    if config.embeddings.llm.cognitive_services_endpoint is None:
+        cognitive_services_endpoint = "https://cognitiveservices.azure.com/.default"
     else:
-        audience = config.embeddings.llm.audience
+        cognitive_services_endpoint = config.embeddings.llm.cognitive_services_endpoint
     print(f"creating embedding llm client with {llm_debug_info}")  # noqa T201
     return OpenAIEmbedding(
         api_key=config.embeddings.llm.api_key,
         azure_ad_token_provider=(
-            get_bearer_token_provider(DefaultAzureCredential(), audience)
+            get_bearer_token_provider(
+                DefaultAzureCredential(), cognitive_services_endpoint
+            )
             if is_azure_client and not config.embeddings.llm.api_key
             else None
         ),
@@ -106,7 +110,7 @@ def get_local_search_engine(
     covariates: dict[str, list[Covariate]],
     response_type: str,
     description_embedding_store: BaseVectorStore,
-) -> LocalSearch:
+) -> BaseSearch:
     """Create a local search engine based on data + configuration."""
     llm = get_llm(config)
     text_embedder = get_text_embedder(config)
@@ -157,7 +161,7 @@ def get_global_search_engine(
     reports: list[CommunityReport],
     entities: list[Entity],
     response_type: str,
-) -> GlobalSearch:
+) -> BaseSearch:
     """Create a global search engine based on data + configuration."""
     token_encoder = tiktoken.get_encoding(config.encoding_model)
     gs_config = config.global_search

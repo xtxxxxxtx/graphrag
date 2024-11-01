@@ -22,6 +22,9 @@ ignorePaths:
   - entity_extraction.txt
   - package.json
   - tests/fixtures/
+  - docsite/data/
+  - docsite/nbdocsite_template/
+  - docsite/posts/query/notebooks/inputs/
   - examples_notebooks/inputs/
   - "*.csv"
   - "*.parquet"
