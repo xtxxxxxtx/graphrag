@@ -31,25 +31,22 @@ from graphrag.index.graph.extractors.community_reports.schemas import (
     NODE_ID,
     NODE_NAME,
 )
-from graphrag.index.operations.embed_text.embed_text import embed_text
-from graphrag.index.verbs.graph.report.create_community_reports import (
-    create_community_reports_df,
-)
-from graphrag.index.verbs.graph.report.prepare_community_reports import (
-    prepare_community_reports_df,
-)
-from graphrag.index.verbs.graph.report.restore_community_hierarchy import (
-    restore_community_hierarchy_df,
+from graphrag.index.operations.embed_text import embed_text
+from graphrag.index.operations.summarize_communities import (
+    prepare_community_reports,
+    restore_community_hierarchy,
+    summarize_communities,
 )
 
 
 async def create_final_community_reports(
     nodes_input: pd.DataFrame,
     edges_input: pd.DataFrame,
+    communities_input: pd.DataFrame,
     claims_input: pd.DataFrame | None,
     callbacks: VerbCallbacks,
     cache: PipelineCache,
-    strategy: dict,
+    summarization_strategy: dict,
     async_mode: AsyncType = AsyncType.AsyncIO,
     num_threads: int = 4,
     full_content_text_embed: dict | None = None,
@@ -64,19 +61,23 @@ async def create_final_community_reports(
     if claims_input is not None:
         claims = _prep_claims(claims_input)
 
-    community_hierarchy = restore_community_hierarchy_df(nodes)
+    community_hierarchy = restore_community_hierarchy(nodes)
 
-    local_contexts = prepare_community_reports_df(
-        nodes, edges, claims, callbacks, strategy.get("max_input_length", 16_000)
+    local_contexts = prepare_community_reports(
+        nodes,
+        edges,
+        claims,
+        callbacks,
+        summarization_strategy.get("max_input_length", 16_000),
     )
 
-    community_reports = await create_community_reports_df(
+    community_reports = await summarize_communities(
         local_contexts,
         nodes,
         community_hierarchy,
         callbacks,
         cache,
-        strategy,
+        summarization_strategy,
         async_mode=async_mode,
         num_threads=num_threads,
     )
@@ -118,7 +119,15 @@ async def create_final_community_reports(
             embedding_name="community_report_title",
         )
 
-    return community_reports
+    # Merge by community and it with communities to add size and period
+    return community_reports.merge(
+        communities_input.loc[:, ["id", "size", "period"]],
+        left_on="community",
+        right_on="id",
+        how="left",
+        copy=False,
+        suffixes=("", "_y"),
+    ).drop(columns=["id_y"])
 
 
 def _prep_nodes(input: pd.DataFrame) -> pd.DataFrame:

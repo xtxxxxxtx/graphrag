@@ -1,6 +1,12 @@
 # Copyright (c) 2024 Microsoft Corporation.
 # Licensed under the MIT License
 
+import json
+
+import pytest
+from datashaper.errors import VerbParallelizationError
+
+from graphrag.config.enums import LLMType
 from graphrag.index.workflows.v1.create_final_community_reports import (
     build_steps,
     workflow_name,
@@ -14,19 +20,40 @@ from .util import (
     load_input_tables,
 )
 
+MOCK_RESPONSES = [
+    json.dumps({
+        "title": "<report_title>",
+        "summary": "<executive_summary>",
+        "rating": 2,
+        "rating_explanation": "<rating_explanation>",
+        "findings": [
+            {
+                "summary": "<insight_1_summary>",
+                "explanation": "<insight_1_explanation",
+            },
+            {
+                "summary": "<insight_2_summary>",
+                "explanation": "<insight_2_explanation",
+            },
+        ],
+    })
+]
+
+MOCK_LLM_CONFIG = {"type": LLMType.StaticResponse, "responses": MOCK_RESPONSES}
+
 
 async def test_create_final_community_reports():
     input_tables = load_input_tables([
         "workflow:create_final_nodes",
         "workflow:create_final_covariates",
         "workflow:create_final_relationships",
+        "workflow:create_final_communities",
     ])
     expected = load_expected(workflow_name)
 
     config = get_config_for_workflow(workflow_name)
 
-    # deleting the llm config results in a default mock injection in run_graph_intelligence
-    del config["create_community_reports"]["strategy"]["llm"]
+    config["create_community_reports"]["strategy"]["llm"] = MOCK_LLM_CONFIG
 
     steps = build_steps(config)
 
@@ -52,13 +79,13 @@ async def test_create_final_community_reports_with_embeddings():
         "workflow:create_final_nodes",
         "workflow:create_final_covariates",
         "workflow:create_final_relationships",
+        "workflow:create_final_communities",
     ])
     expected = load_expected(workflow_name)
 
     config = get_config_for_workflow(workflow_name)
 
-    # deleting the llm config results in a default mock injection in run_graph_intelligence
-    del config["create_community_reports"]["strategy"]["llm"]
+    config["create_community_reports"]["strategy"]["llm"] = MOCK_LLM_CONFIG
 
     config["skip_full_content_embedding"] = False
     config["community_report_full_content_embed"]["strategy"]["type"] = "mock"
@@ -83,3 +110,27 @@ async def test_create_final_community_reports_with_embeddings():
     assert len(actual["summary_embedding"][:1][0]) == 3
     assert "title_embedding" in actual.columns
     assert len(actual["title_embedding"][:1][0]) == 3
+
+
+async def test_create_final_community_reports_missing_llm_throws():
+    input_tables = load_input_tables([
+        "workflow:create_final_nodes",
+        "workflow:create_final_covariates",
+        "workflow:create_final_relationships",
+        "workflow:create_final_communities",
+    ])
+
+    config = get_config_for_workflow(workflow_name)
+
+    # deleting the llm config results in a default mock injection in run_graph_intelligence
+    del config["create_community_reports"]["strategy"]["llm"]
+
+    steps = build_steps(config)
+
+    with pytest.raises(VerbParallelizationError):
+        await get_workflow_output(
+            input_tables,
+            {
+                "steps": steps,
+            },
+        )

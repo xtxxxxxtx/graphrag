@@ -3,12 +3,14 @@
 
 """All the steps to transform final communities."""
 
+from datetime import datetime, timezone
+
 import pandas as pd
 from datashaper import (
     VerbCallbacks,
 )
 
-from graphrag.index.verbs.graph.unpack import unpack_graph_df
+from graphrag.index.operations.unpack_graph import unpack_graph
 
 
 def create_final_communities(
@@ -16,8 +18,8 @@ def create_final_communities(
     callbacks: VerbCallbacks,
 ) -> pd.DataFrame:
     """All the steps to transform final communities."""
-    graph_nodes = unpack_graph_df(entity_graph, callbacks, "clustered_graph", "nodes")
-    graph_edges = unpack_graph_df(entity_graph, callbacks, "clustered_graph", "edges")
+    graph_nodes = unpack_graph(entity_graph, callbacks, "clustered_graph", "nodes")
+    graph_edges = unpack_graph(entity_graph, callbacks, "clustered_graph", "edges")
 
     # Merge graph_nodes with graph_edges for both source and target matches
     source_clusters = graph_nodes.merge(
@@ -61,6 +63,12 @@ def create_final_communities(
 
     filtered["title"] = "Community " + filtered["id"].astype(str)
 
+    # Add period timestamp to the community reports
+    filtered["period"] = datetime.now(timezone.utc).date().isoformat()
+
+    # Add size of the community
+    filtered["size"] = filtered.loc[:, "text_unit_ids"].apply(lambda x: len(x))
+
     return filtered.loc[
         :,
         [
@@ -69,5 +77,7 @@ def create_final_communities(
             "level",
             "relationship_ids",
             "text_unit_ids",
+            "period",
+            "size",
         ],
     ]

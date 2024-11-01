@@ -27,7 +27,7 @@ class TextEmbeddingConfig(LLMConfig):
     )
     skip: list[str] = Field(description="The specific embeddings to skip.", default=[])
     vector_store: dict | None = Field(
-        description="The vector storage configuration", default=None
+        description="The vector storage configuration", default=defs.VECTOR_STORE
     )
     strategy: dict | None = Field(
         description="The override strategy to use.", default=None
@@ -35,7 +35,7 @@ class TextEmbeddingConfig(LLMConfig):
 
     def resolved_strategy(self) -> dict:
         """Get the resolved text embedding strategy."""
-        from graphrag.index.operations.embed_text.embed_text import (
+        from graphrag.index.operations.embed_text import (
             TextEmbedStrategyType,
         )
 
