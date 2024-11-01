@@ -14,10 +14,7 @@ from graphrag.config.enums import (
     StorageType,
     TextEmbeddingTarget,
 )
-from graphrag.config.models import (
-    GraphRagConfig,
-    TextEmbeddingConfig,
-)
+from graphrag.config.models import GraphRagConfig, StorageConfig, TextEmbeddingConfig
 from graphrag.index.config.cache import (
     PipelineBlobCacheConfig,
     PipelineCacheConfigTypes,
@@ -49,9 +46,7 @@ from graphrag.index.config.workflow import (
     PipelineWorkflowReference,
 )
 from graphrag.index.workflows.default_workflows import (
-    create_base_documents,
     create_base_entity_graph,
-    create_base_extracted_entities,
     create_base_text_units,
     create_final_communities,
     create_final_community_reports,
@@ -61,7 +56,6 @@ from graphrag.index.workflows.default_workflows import (
     create_final_nodes,
     create_final_relationships,
     create_final_text_units,
-    create_summarized_entities,
 )
 
 log = logging.getLogger(__name__)
@@ -121,7 +115,10 @@ def create_pipeline_config(settings: GraphRagConfig, verbose=False) -> PipelineC
         root_dir=settings.root_dir,
         input=_get_pipeline_input_config(settings),
         reporting=_get_reporting_config(settings),
-        storage=_get_storage_config(settings),
+        storage=_get_storage_config(settings, settings.storage),
+        update_index_storage=_get_storage_config(
+            settings, settings.update_index_storage
+        ),
         cache=_get_cache_config(settings),
         workflows=[
             *_document_workflows(settings, embedded_fields),
@@ -173,17 +170,12 @@ def _document_workflows(
     )
     return [
         PipelineWorkflowReference(
-            name=create_base_documents,
+            name=create_final_documents,
             config={
                 "document_attribute_columns": list(
                     {*(settings.input.document_attribute_columns)}
                     - builtin_document_attributes
-                )
-            },
-        ),
-        PipelineWorkflowReference(
-            name=create_final_documents,
-            config={
+                ),
                 "document_raw_content_embed": _get_embedding_settings(
                     settings.embeddings,
                     "document_raw_content",
@@ -267,10 +259,9 @@ def _graph_workflows(
     )
     return [
         PipelineWorkflowReference(
-            name=create_base_extracted_entities,
+            name=create_base_entity_graph,
             config={
                 "graphml_snapshot": settings.snapshots.graphml,
-                "raw_entity_snapshot": settings.snapshots.raw_entities,
                 "entity_extract": {
                     **settings.entity_extraction.parallelization.model_dump(),
                     "async_mode": settings.entity_extraction.async_mode,
@@ -279,12 +270,6 @@ def _graph_workflows(
                     ),
                     "entity_types": settings.entity_extraction.entity_types,
                 },
-            },
-        ),
-        PipelineWorkflowReference(
-            name=create_summarized_entities,
-            config={
-                "graphml_snapshot": settings.snapshots.graphml,
                 "summarize_descriptions": {
                     **settings.summarize_descriptions.parallelization.model_dump(),
                     "async_mode": settings.summarize_descriptions.async_mode,
@@ -292,12 +277,6 @@ def _graph_workflows(
                         settings.root_dir,
                     ),
                 },
-            },
-        ),
-        PipelineWorkflowReference(
-            name=create_base_entity_graph,
-            config={
-                "graphml_snapshot": settings.snapshots.graphml,
                 "embed_graph_enabled": settings.embed_graph.enabled,
                 "cluster_graph": {
                     "strategy": settings.cluster_graph.resolved_strategy()
@@ -490,23 +469,26 @@ def _get_reporting_config(
 
 def _get_storage_config(
     settings: GraphRagConfig,
-) -> PipelineStorageConfigTypes:
+    storage_settings: StorageConfig | None,
+) -> PipelineStorageConfigTypes | None:
     """Get the storage type from the settings."""
+    if not storage_settings:
+        return None
     root_dir = settings.root_dir
-    match settings.storage.type:
+    match storage_settings.type:
         case StorageType.memory:
             return PipelineMemoryStorageConfig()
         case StorageType.file:
             # relative to the root_dir
-            base_dir = settings.storage.base_dir
+            base_dir = storage_settings.base_dir
             if base_dir is None:
                 msg = "Base directory must be provided for file storage."
                 raise ValueError(msg)
             return PipelineFileStorageConfig(base_dir=str(Path(root_dir) / base_dir))
         case StorageType.blob:
-            connection_string = settings.storage.connection_string
-            storage_account_blob_url = settings.storage.storage_account_blob_url
-            container_name = settings.storage.container_name
+            connection_string = storage_settings.connection_string
+            storage_account_blob_url = storage_settings.storage_account_blob_url
+            container_name = storage_settings.container_name
             if container_name is None:
                 msg = "Container name must be provided for blob storage."
                 raise ValueError(msg)
@@ -516,12 +498,12 @@ def _get_storage_config(
             return PipelineBlobStorageConfig(
                 connection_string=connection_string,
                 container_name=container_name,
-                base_dir=settings.storage.base_dir,
+                base_dir=storage_settings.base_dir,
                 storage_account_blob_url=storage_account_blob_url,
             )
         case _:
             # relative to the root_dir
-            base_dir = settings.storage.base_dir
+            base_dir = storage_settings.base_dir
             if base_dir is None:
                 msg = "Base directory must be provided for file storage."
                 raise ValueError(msg)
