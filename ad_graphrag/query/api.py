@@ -59,6 +59,7 @@ async def global_search(
     response_type: str,
     query: str,
     relationships: pd.DataFrame,
+    text_units: pd.DataFrame,
     reverse: bool = True,
 ) -> tuple[
     str | dict[str, Any] | list[dict[str, Any]],
@@ -95,16 +96,22 @@ async def global_search(
     result: SearchResult = await search_engine.asearch(query=query)
     response = result.response
     context_data = _reformat_context_data(result.context_data)  # type: ignore
+
+    text_units_dict = {}
+    for i in range(text_units.shape[0]):
+        text_units_dict[text_units["id"].iloc[i]] = text_units["text"].iloc[i]
+
     if reverse:
         reverse_target = "map_response"
-        reverse_level = "instance"
+        reverse_level = "raw"
         _relationships = read_indexer_relationships(relationships)
         all_reference_infor = global_search_reverse_engineering(
             result,
             reverse_target=reverse_target,
             reverse_level=reverse_level,
             entities=_entities,
-            relationships=_relationships)
+            relationships=_relationships,
+            text_units=text_units_dict)
         reverse_result_print(all_reference_infor, reverse_target)
 
     return response, context_data

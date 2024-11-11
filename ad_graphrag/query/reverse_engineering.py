@@ -1,7 +1,7 @@
 import re
 from graphrag.query.structured_search.global_search.search import GlobalSearchResult
 import pandas as pd
-
+from itertools import chain
 
 def global_search_reverse_engineering(
         result,
@@ -9,6 +9,7 @@ def global_search_reverse_engineering(
         reverse_level="instance",
         entities=None,
         relationships=None,
+        text_units=None,
         covariates=None):
     all_reference_infor = {}
     reports = result.context_data["reports"]
@@ -55,7 +56,7 @@ def global_search_reverse_engineering(
     if reverse_level == "instance":
         return all_reference_infor
 
-    #TODO: raw document level reverse engineering.
+    all_reference_infor = from_entities_to_text_units(all_reference_infor, text_units, print_units=False)
 
     return all_reference_infor
 
@@ -83,8 +84,16 @@ def reverse_result_print(all_reference_infor, reverse_target="map_response"):
         if "relationships" in infor:
             print("Reference Relationships: " + "\n" + str(infor["relationships"]) + "\n\n")
 
-        if "covariates" in  infor:
+        if "covariates" in infor:
             print("Reference Covariates: " + "\n" + str(infor["covariates"]) + "\n\n")
+
+        # if "text_units" in infor:
+        #     print("Reference text units: \n")
+        #     for text_unit in infor["text_units"]:
+        #         print(text_unit)
+        #         print("\n\n")
+        #         print("*" * 120)
+
     return
 
 
@@ -107,36 +116,6 @@ def from_answer_to_community(response, reports):
         return reports.loc[reports["id"].isin(communities), :]
     else:
         return None
-
-#
-# def from_final_answer_to_communities(result, print_communities=True):
-#     response = result.response
-#     reports = result.context_data["reports"]
-#     return [from_answer_to_community(response, reports, print_communities)]
-#
-# def from_map_response_to_communities_and_score(result, print_communities=True):
-#     map_responses = result.map_responses
-#     reports = result.context_data["reports"]
-#     all_reference_infor = []
-#     for map_response in map_responses:
-#         responses = map_response.response
-#         for response in responses:
-#             answer = response["answer"]
-#             score = response["score"]
-#             reference_infor = from_answer_to_community(answer, reports, False)
-#             for infor in reference_infor.values():
-#                 infor["score"] = score
-#             all_reference_infor.append(reference_infor)
-#
-#     if print_communities:
-#         for i, reference_infor in enumerate(all_reference_infor):
-#             print("="*30 + f"Map Response {i}: " + "=" * 30)
-#             for response, infor in reference_infor.items():
-#                 print("Response: " + "\n" + response)
-#                 print("Relevant Score: " + str(infor["score"]))
-#                 print("Reference Communities: " + str(infor["communities"]) + "\n\n")
-#
-#     return all_reference_infor
 
 
 def from_community_to_entities(all_reference_infor, entities, print_entities=True):
@@ -207,8 +186,37 @@ def from_community_to_relationships(all_reference_infor, relationships, print_re
 
     return all_reference_infor
 
+
+def from_entities_to_text_units(all_reference_infor, text_units, print_units=True):
+    for response in all_reference_infor.keys():
+        infor = all_reference_infor[response]
+        all_text_units_ids = []
+        if "entities" in infor:
+            all_text_units_ids.extend(infor["entities"]["text_unit_ids"].tolist())
+        if "relationships" in infor:
+            all_text_units_ids.extend(infor["relationships"]["text_unit_ids"].tolist())
+
+        all_text_units_ids = list(chain.from_iterable(all_text_units_ids))
+        print(len(all_text_units_ids))
+        all_text_units_ids = set(all_text_units_ids)
+        all_text_units = [text_units[id] for id in all_text_units_ids]
+        infor["text_units"] = all_text_units
+
+    if print_units:
+        for i, reference_infor in enumerate(all_reference_infor):
+            print("=" * 30 + f"Map Response {i}: " + "=" * 30)
+            for response, infor in reference_infor.items():
+                print("Response: " + "\n" + response)
+                print("Reference text units: " + "\n\n")
+                for text_unit in infor["text_units"]:
+                    print(text_unit)
+                    print("\n\n")
+
+    return all_reference_infor
+
 def from_community_to_covariates(all_reference_infor, covariates, print_covariates=True):
     pass
+
 
 if __name__ == "__main__":
     import pandas as pd
