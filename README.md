@@ -28,37 +28,33 @@ To learn more about GraphRAG and how it can be used to enhance your LLM's abilit
 
 ## Instructions for GraphRAG
 
-### Step 1: Set Up Your Directory
+### Step 1: Clone the Repository Using GitHub Desktop
 
-1. Open the **Terminal** application.
-2. Navigate to the directory where you'd like to download the repository. Replace ```...``` with your preferred path:
+1. Download GitHub Desktop from [here](https://desktop.github.com/download/) and install it.
+2. Open GitHub Desktop, log in to your GitHub account, and go to **File > Clone repository**.
+3. Choose the **URL** tab and paste the following link:
+   ```
+   https://github.com/xtxxxxxtx/graphrag.git
+   ```
+4. Select a local path where you would like to save the repository. Remember this location, as you’ll need it in the following steps.
+   > **Note:** An example is shown below.
+   
+   > <img src="https://github.com/user-attachments/assets/34fcc0e6-7655-4195-a7a2-c977cca50d0c" alt="image" width="600"/>
+
+### Step 2: Navigate to the GraphRAG Directory
+
+1. Open **Terminal** and navigate to the ```graphrag``` directory you just cloned. Use the following command, replacing ```...``` with your local path:
    ```
    cd ...
    ```
-   **Example:***
+   **Example:**
    ```
-   cd /Users/xu/Downloads
-   ```
-
-### Step 2: Download the GraphRAG Repository
-
-1. Copy and paste the following command into Terminal to download the repository:
-   ```
-   git clone https://github.com/xtxxxxxtx/graphrag.git
-   ```
-2. Enter the newly created ```graphrag``` directory:
-   ```
-   cd graphrag/
-   ```
-3. To ensure you always have the latest updates, run these commands whenever you use GraphRAG (Not necessary for the first time):
-   ```
-   git fetch
-   git pull
+   cd /Users/xu/Desktop/graphrag
    ```
 
 ### Step 3: Start the GraphRAG Environment
 
-1. **Skip this installation** if you already have ```poetry``` installed. Otherwise, follow the steps below to install it using ```pipx```.
+1. **Skip this installation** if you already have ```poetry``` installed. Otherwise, copy and paste the commands below into Terminal to install it:
 
    **On MacOS:**
    ```
