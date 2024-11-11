@@ -26,7 +26,56 @@ The GraphRAG project is a data pipeline and transformation suite that is designe
 
 To learn more about GraphRAG and how it can be used to enhance your LLM's ability to reason about your private data, please visit the <a href="https://www.microsoft.com/en-us/research/blog/graphrag-unlocking-llm-discovery-on-narrative-private-data/" target="_blank">Microsoft Research Blog Post.</a>
 
-## 
+## Instructions for GraphRAG
+
+### Step 1: Set Up Your Directory
+
+1. Open the **Terminal** application.
+2. Navigate to the directory where you'd like to download the repository. Replace ```...``` with your preferred path:
+   ```
+   cd ...
+   ```
+   **Example:***
+   ```
+   cd /Users/xu/Downloads
+   ```
+
+### Step 2: Download the GraphRAG Repository
+
+1. Copy and paste the following command into Terminal to download the repository:
+   ```
+   git clone https://github.com/xtxxxxxtx/graphrag.git
+   ```
+2. Enter the newly created ```graphrag``` directory:
+   ```
+   cd graphrag/
+   ```
+3. To ensure you always have the latest updates, run these commands whenever you use GraphRAG (Not necessary for the first time):
+   ```
+   git fetch
+   git pull
+   ```
+
+### Step 3: Start the GraphRAG Environment
+
+1. Run the following command to activate the required environment:
+   ```
+   poetry shell
+   ```
+
+### Step 4: Download Test Papers
+
+1. Visit [the link](https://wustl.app.box.com/folder/279980373429?s=9go3m9sbsaxq91liwmej4qx4wjxg8qna) and download the ```ragtest``` folder, which contains the six sample papers.
+2. Place the ```ragtest``` folder inside the main ```graphrag``` folder.
+   > **Note:** There is a secondary ```graphrag``` folder within the main one. Make sure to place ```ragtest``` inside the main graphrag folder.
+
+### Step 5: Test a Query
+
+1. Run the following command in Terminal, modifying the query text as needed:
+   ```
+   python ad_graphrag/query/__main__.py --root ragtest --method global "What is the main topic in these papers?"
+   ```
+   > **Note:** Feel free to change the query text within the quotation marks to test different questions.
 
 ## Quickstart
 
