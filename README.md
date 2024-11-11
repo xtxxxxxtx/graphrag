@@ -59,29 +59,30 @@ To learn more about GraphRAG and how it can be used to enhance your LLM's abilit
 ### Step 3: Start the GraphRAG Environment
 
 1. **Skip this installation** if you already have ```poetry``` installed. Otherwise, follow the steps below to install it using ```pipx```.
-   * **On MacOS:**
-     ```
-     brew install pipx
-     pipx ensurepath
-     ```
-   * **On Windows:**
-     ```
-     scoop install pipx
-     pipx ensurepath
-     ```
+
+   **On MacOS:**
+   ```
+   brew install pipx
+   pipx ensurepath
+   ```
+   **On Windows:**
+   ```
+   scoop install pipx
+   pipx ensurepath
+   ```
    > **Note:** For more information about ```pipx```, you can visit [the pipx documentation](https://pipx.pypa.io/stable/installation/).
-2. With ```pipx``` installed, you can now install ```poetry```:
+3. With ```pipx``` installed, you can now install ```poetry```:
    ```
    pipx install poetry
    ```
-3. Run the following command to activate the required environment:
+4. Run the following command to activate the required environment:
    ```
    poetry shell
    ```
 
 ### Step 4: Download Test Papers
 
-1. Visit [the link]([https://wustl.app.box.com/folder/279980373429?s=9go3m9sbsaxq91liwmej4qx4wjxg8qna](https://wustl.box.com/s/wvi9z297a90d6ymdn3swas4fzezwliia)) and download the ```ragtest``` folder, which contains the six sample papers.
+1. Visit [the link](https://wustl.box.com/s/wvi9z297a90d6ymdn3swas4fzezwliia) and download the ```ragtest``` folder, which contains the six sample papers.
 2. Place the ```ragtest``` folder inside the main ```graphrag``` folder.
    > **Note:** There is a secondary ```graphrag``` folder within the main one. Make sure to place ```ragtest``` inside the main graphrag folder.
 
@@ -89,7 +90,7 @@ To learn more about GraphRAG and how it can be used to enhance your LLM's abilit
 
 1. Run the following command in Terminal, modifying the query text as needed:
    ```
-   python ad_graphrag/query/__main__.py --root ragtest --method global "What is the main topic in these papers?"
+   PYTHONPATH="$(pwd)" python ad_graphrag/query/__main__.py --root ragtest --method global "What is the main topic in these papers?"
    ```
    > **Note:** Feel free to change the query text within the quotation marks to test different questions.
 
