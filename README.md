@@ -56,12 +56,12 @@ To learn more about GraphRAG and how it can be used to enhance your LLM's abilit
 
 1. **Skip this installation** if you already have ```poetry``` installed. Otherwise, copy and paste the commands below into Terminal to install it:
 
-   **On MacOS:**
+   **On MacOS/Linux:** For Mac/Linux user, you will need [brew](https://brew.sh/) be installed first.
    ```
    brew install pipx
    pipx ensurepath
    ```
-   **On Windows:**
+   **On Windows:** For Windows user, you will need [scoop](https://scoop.sh/) be installed first.
    ```
    scoop install pipx
    pipx ensurepath
@@ -81,6 +81,7 @@ To learn more about GraphRAG and how it can be used to enhance your LLM's abilit
 1. Visit [the link](https://wustl.box.com/s/wvi9z297a90d6ymdn3swas4fzezwliia) and download the ```ragtest``` folder, which contains the six sample papers.
 2. Place the ```ragtest``` folder inside the main ```graphrag``` folder.
    > **Note:** There is a secondary ```graphrag``` folder within the main one. Make sure to place ```ragtest``` inside the main graphrag folder.
+   
 
 ### Step 5: Test a Query
 
@@ -89,47 +90,3 @@ To learn more about GraphRAG and how it can be used to enhance your LLM's abilit
    PYTHONPATH="$(pwd)" python ad_graphrag/query/__main__.py --root ragtest --method global "What is the main topic in these papers?"
    ```
    > **Note:** Feel free to change the query text within the quotation marks to test different questions.
-
-## Quickstart
-
-To get started with the GraphRAG system we recommend trying the [Solution Accelerator](https://github.com/Azure-Samples/graphrag-accelerator) package. This provides a user-friendly end-to-end experience with Azure resources.
-
-## Repository Guidance
-
-This repository presents a methodology for using knowledge graph memory structures to enhance LLM outputs. Please note that the provided code serves as a demonstration and is not an officially supported Microsoft offering.
-
-⚠️ *Warning: GraphRAG indexing can be an expensive operation, please read all of the documentation to understand the process and costs involved, and start small.*
-
-## Diving Deeper
-
-- To learn about our contribution guidelines, see [CONTRIBUTING.md](./CONTRIBUTING.md)
-- To start developing _GraphRAG_, see [DEVELOPING.md](./DEVELOPING.md)
-- Join the conversation and provide feedback in the [GitHub Discussions tab!](https://github.com/microsoft/graphrag/discussions)
-
-## Prompt Tuning
-
-Using _GraphRAG_ with your data out of the box may not yield the best possible results.
-We strongly recommend to fine-tune your prompts following the [Prompt Tuning Guide](https://microsoft.github.io/graphrag/prompt_tuning/overview/) in our documentation.
-
-## Responsible AI FAQ
-
-See [RAI_TRANSPARENCY.md](./RAI_TRANSPARENCY.md)
-
-- [What is GraphRAG?](./RAI_TRANSPARENCY.md#what-is-graphrag)
-- [What can GraphRAG do?](./RAI_TRANSPARENCY.md#what-can-graphrag-do)
-- [What are GraphRAG’s intended use(s)?](./RAI_TRANSPARENCY.md#what-are-graphrags-intended-uses)
-- [How was GraphRAG evaluated? What metrics are used to measure performance?](./RAI_TRANSPARENCY.md#how-was-graphrag-evaluated-what-metrics-are-used-to-measure-performance)
-- [What are the limitations of GraphRAG? How can users minimize the impact of GraphRAG’s limitations when using the system?](./RAI_TRANSPARENCY.md#what-are-the-limitations-of-graphrag-how-can-users-minimize-the-impact-of-graphrags-limitations-when-using-the-system)
-- [What operational factors and settings allow for effective and responsible use of GraphRAG?](./RAI_TRANSPARENCY.md#what-operational-factors-and-settings-allow-for-effective-and-responsible-use-of-graphrag)
-
-## Trademarks
-
-This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft
-trademarks or logos is subject to and must follow
-[Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
-Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
-Any use of third-party trademarks or logos are subject to those third-party's policies.
-
-## Privacy
-
-[Microsoft Privacy Statement](https://privacy.microsoft.com/en-us/privacystatement)
