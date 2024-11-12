@@ -34,9 +34,10 @@ def global_search_reverse_engineering(
         for paragraph in response_paragraphs:
             infor = {}
             refer_communities = from_answer_to_community(paragraph, reports)
+            if refer_communities is None:
+                continue
             infor["communities"] = refer_communities
             all_reference_infor[paragraph] = infor
-
     else:
         raise ValueError(f"The reverse target {reverse_target} is wrong.")
 
@@ -87,12 +88,15 @@ def reverse_result_print(all_reference_infor, reverse_target="map_response"):
         if "covariates" in infor:
             print("Reference Covariates: " + "\n" + str(infor["covariates"]) + "\n\n")
 
-        # if "text_units" in infor:
-        #     print("Reference text units: \n")
-        #     for text_unit in infor["text_units"]:
-        #         print(text_unit)
-        #         print("\n\n")
-        #         print("*" * 120)
+        if "text_units" in infor:
+            print("Reference text units: \n")
+            text_units = infor["text_units"]
+            if len(text_units) > 5:
+                text_units = text_units[:5]
+            for text_unit in text_units:
+                print(text_unit)
+                print("\n\n")
+                print("*" * 120)
 
     return
 

@@ -27,6 +27,8 @@ def run_global_search(
     response_type: str,
     streaming: bool,
     query: str,
+    reverse: bool,
+    final_response: bool,
 ):
     """Perform a global search with a given query.
 
@@ -97,6 +99,8 @@ def run_global_search(
             query=query,
             relationships=final_relationships,
             text_units=final_text_units,
+            reverse=reverse,
+            final_response=final_response,
         )
     )
     reporter.success(f"Global Search Response:\n{response}")

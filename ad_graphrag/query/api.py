@@ -61,6 +61,7 @@ async def global_search(
     relationships: pd.DataFrame,
     text_units: pd.DataFrame,
     reverse: bool = True,
+    final_response: bool = False,
 ) -> tuple[
     str | dict[str, Any] | list[dict[str, Any]],
     str | list[pd.DataFrame] | dict[str, pd.DataFrame],
@@ -102,7 +103,8 @@ async def global_search(
         text_units_dict[text_units["id"].iloc[i]] = text_units["text"].iloc[i]
 
     if reverse:
-        reverse_target = "map_response"
+
+        reverse_target = "reduced_response" if final_response else "map_response"
         reverse_level = "raw"
         _relationships = read_indexer_relationships(relationships)
         all_reference_infor = global_search_reverse_engineering(

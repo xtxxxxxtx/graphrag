@@ -70,6 +70,19 @@ if __name__ == "__main__":
         help="Print response in a streaming manner",
         action="store_true",
     )
+
+    parser.add_argument(
+        "--no_reverse",
+        help="reverse to source documents.",
+        action="store_true",
+    )
+
+    parser.add_argument(
+        "--final_response",
+        help="reverse final response.",
+        action="store_true",
+    )
+
     parser.add_argument(
         "query",
         nargs=1,
@@ -98,6 +111,8 @@ if __name__ == "__main__":
                 args.response_type,
                 args.streaming,
                 args.query[0],
+                not args.no_reverse,
+                args.final_response,
             )
         case _:
             raise ValueError(INVALID_METHOD_ERROR)

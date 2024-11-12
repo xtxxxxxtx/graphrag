@@ -85,8 +85,19 @@ To learn more about GraphRAG and how it can be used to enhance your LLM's abilit
 
 ### Step 5: Test a Query
 
-1. Run the following command in Terminal, modifying the query text as needed:
-   ```
-   PYTHONPATH="$(pwd)" python ad_graphrag/query/__main__.py --root ragtest --method global "What is the main topic in these papers?"
-   ```
-   > **Note:** Feel free to change the query text within the quotation marks to test different questions.
+Run the following command in Terminal, modifying the query text as needed:
+```
+PYTHONPATH="$(pwd)" python ad_graphrag/query/__main__.py --root ragtest --method global "What is the main topic in these papers?"
+```
+> **Note:** Feel free to change the query text within the quotation marks to test different questions.
+
+In default, relevant score, all related communities, entities, relationship, and selected text chunks will be print out 
+for each intermediate response. If you only want final answer, as the original GraphRAG, just do:
+```
+PYTHONPATH="$(pwd)" python ad_graphrag/query/__main__.py --root ragtest --no_reverse --method global "What is the main topic in these papers?"
+```
+
+If you want to see the relevant information for the final answer, run as the follow:
+```
+PYTHONPATH="$(pwd)" python ad_graphrag/query/__main__.py --root ragtest --final_response --method global "What is the main topic in these papers?"
+```
