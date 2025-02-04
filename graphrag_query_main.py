@@ -29,10 +29,14 @@ if __name__ == "__main__":
         type=int,
         default=4,
     )
+    parser.add_argument(
+        "--test",
+        action="store_true"
+    )
 
     args = parser.parse_args()
 
-    if args.question_dir:
+    if not args.test and args.question_dir:
         with open(args.question_dir, "r") as f:
             questions = [question.rstrip("\n") for question in f]
     else:
@@ -43,8 +47,10 @@ if __name__ == "__main__":
         response, context_data = run_global_search(config_filepath=None, data_dir=None, root_dir=Path(args.root_dir), query=question, community_level=args.community_level, response_type="Multiple Paragraphs", streaming=False)
         results.append({"response": response, "query": question})
 
-    with open(f"{args.output_dir}/graphrag_{args.community_level}_result.json", "w") as f:
-        json.dump(results, f, indent=2)
-
+    if not args.test:
+        with open(f"{args.output_dir}/graphrag_{args.community_level}_result.json", "w") as f:
+            json.dump(results, f, indent=2)
+    else:
+        print(results[0]["response"])
 
 
